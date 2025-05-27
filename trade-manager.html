@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Binary Trade Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ff99;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #444;
+      text-align: center;
+    }
+    th {
+      background-color: #1f1f1f;
+    }
+    .win {
+      background-color: #2ecc71;
+    }
+    .loss {
+      background-color: #e74c3c;
+    }
+    input, select {
+      padding: 6px;
+      margin: 5px;
+      background-color: #1e1e1e;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    #final {
+      font-size: 1.2em;
+      margin-top: 20px;
+      color: #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Binary Options Trade Manager (Custom Amounts)</h1>
+
+<label>Initial Capital: $<input type="number" id="initialCapital" value="146"></label>
+<label>Payout %: <input type="number" id="payout" value="80"></label>
+
+<table>
+  <thead>
+    <tr>
+      <th>Trade #</th>
+      <th>Result (W/L)</th>
+      <th>Amount ($)</th>
+      <th>Return ($)</th>
+      <th>Balance After</th>
+    </tr>
+  </thead>
+  <tbody id="tradeTable">
+    <!-- Rows inserted by JS -->
+  </tbody>
+</table>
+
+<div id="final">
+  Final Balance: $<span id="finalBalance">0.00</span>
+</div>
+
+<script>
+const tradeCount = 10;
+
+function buildTable() {
+  const tbody = document.getElementById('tradeTable');
+  tbody.innerHTML = "";
+
+  for (let i = 0; i < tradeCount; i++) {
+    const row = document.createElement('tr');
+
+    const cell1 = document.createElement('td');
+    cell1.textContent = i + 1;
+
+    const cell2 = document.createElement('td');
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="L">L</option><option value="W">W</option>';
+    select.onchange = calculate;
+    cell2.appendChild(select);
+
+    const amtCell = document.createElement('td');
+    const amtInput = document.createElement('input');
+    amtInput.type = 'number';
+    amtInput.min = '0';
+    amtInput.value = '0';
+    amtInput.oninput = calculate;
+    amtInput.id = `amt${i}`;
+    amtCell.appendChild(amtInput);
+
+    const retCell = document.createElement('td');
+    retCell.id = `ret${i}`;
+
+    const balCell = document.createElement('td');
+    balCell.id = `bal${i}`;
+
+    row.appendChild(cell1);
+    row.appendChild(cell2);
+    row.appendChild(amtCell);
+    row.appendChild(retCell);
+    row.appendChild(balCell);
+    tbody.appendChild(row);
+  }
+
+  calculate();
+}
+
+function calculate() {
+  let balance = parseFloat(document.getElementById('initialCapital').value);
+  const payout = parseFloat(document.getElementById('payout').value) / 100;
+
+  for (let i = 0; i < tradeCount; i++) {
+    const select = document.querySelectorAll('select')[i];
+    const isWin = select.value === 'W';
+    const amt = parseFloat(document.getElementById(`amt${i}`).value) || 0;
+
+    const ret = isWin ? amt * payout : -amt;
+    balance += ret;
+
+    const retCell = document.getElementById(`ret${i}`);
+    const balCell = document.getElementById(`bal${i}`);
+
+    retCell.textContent = (isWin ? "+" : "") + ret.toFixed(2);
+    retCell.className = isWin ? 'win' : 'loss';
+    balCell.textContent = balance.toFixed(2);
+  }
+
+  document.getElementById('finalBalance').textContent = balance.toFixed(2);
+}
+
+window.onload = buildTable;
+</script>
+
+</body>
+</html>
