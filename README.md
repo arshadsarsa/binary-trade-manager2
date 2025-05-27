@@ -1,0 +1,1 @@
+# binary-trade-manager2
